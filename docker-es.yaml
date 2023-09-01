@@ -1,0 +1,89 @@
+version: "3.8"
+services:
+  elasticsearch:
+    image: elasticsearch:8.5.1
+    container_name: elasticsearch
+    privileged: true
+    environment:
+      # - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=changeme
+    volumes:
+      - ./es/plugins:/usr/share/elasticsearch/plugins
+      - ./es/data:/usr/share/elasticsearch/data
+      - ./es/logs:/user/share/elasticsearch/logs
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - my-network
+
+  es-head:
+    image: mobz/elasticsearch-head:5
+    container_name: es-head
+    hostname: es-head
+    restart: no
+    privileged: true
+    tty: true
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "9100:9100"
+    # volumes:
+    #   - /etc/localtime:/etc/timezone
+    #   - /etc/localtime:/etc/localtime
+    networks:
+      - my-network
+
+  cerebro:
+    image: lmenezes/cerebro:latest
+    container_name: cerebro
+    hostname: cerebro
+    restart: no
+    privileged: true
+    tty: true
+    environment:
+      - TZ=Asia/Shanghai
+      - AUTH_TYPE=basic
+      - BASIC_AUTH_USER=admin
+      - BASIC_AUTH_PWD=admin
+    ports:
+      - "9000:9000"
+    # volumes:
+    #   - /etc/localtime:/etc/timezone
+    #   - /etc/localtime:/etc/localtime
+    command:
+      - -Dhosts.0.host=http://elasticsearch:9200
+    networks:
+      - my-network
+
+  kibana:
+    image: kibana:8.5.1
+    container_name: kibana
+    hostname: kibana
+    restart: no
+    privileged: true
+    tty: true
+    # volumes:
+    #   - /etc/localtime:/etc/timezone
+    #   - /etc/localtime:/etc/localtime
+    environment:
+      - TZ=Asia/Shanghai
+      - I18N_LOCALE=zh-CN
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

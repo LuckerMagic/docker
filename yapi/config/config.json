@@ -1,0 +1,42 @@
+{
+    "port": "3000",
+    "adminAccount": {
+      "username": "admin",
+      "password": "admin123"
+    },
+    "db": {
+      "servername": "mongodb",
+      "DATABASE": "yapi",
+      "port": 27017,
+      "user": "root",
+      "pass": "123456"
+    },
+    "mail": {
+      "enable": false,
+      "host": "smtp.example.com",
+      "port": 465,
+      "from": "noreply@example.com",
+      "auth": {
+        "user": "username",
+        "pass": "password"
+      }
+    },
+    "ldapLogin": {
+      "enable": false,
+      "server": "ldap.example.com",
+      "port": 389,
+      "baseDn": "dc=example,dc=com",
+      "bindDn": "cn=admin,dc=example,dc=com",
+      "bindPassword": "admin123"
+    },
+    "ldapSearch": {
+      "base": "ou=users,dc=example,dc=com",
+      "filter": "(objectClass=person)",
+      "attributes": "cn,mail"
+    },
+    "ldapMailSuffix": "@example.com",
+    "closeRegister": false,
+    "logPath": "../log/",
+    "logDays": 30
+  }
+  

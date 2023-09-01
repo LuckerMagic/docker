@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  jdk:
+    image: openjdk:11
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-11
+
+  maven:
+    image: maven:3.8.2-openjdk-11
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-11
+      - MAVEN_OPTS=-Xmx512m
+
+  gradle:
+    image: gradle:jdk11
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-11
+  git:
+    image: alpine/git:latest
+    volumes:
+      - ./git/repo:/git/repo
+
+
+networks:
+  my-network:
+    # 可选的网络配置
+    driver: bridge

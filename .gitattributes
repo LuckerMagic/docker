@@ -1,0 +1,1 @@
+gitlab/data/gitlab-rails/sockets/gitlab.socket filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,87 @@
+version: "3.8"
+services:
+  mysql-latest:
+    image: mysql:latest
+    restart: no
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      - ./mysql/env/mysql.env
+    env_file:
+      - ./mysql/env/mysql.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/env/nacos-config.sql:/docker-entrypoint-initdb.d/nacos-config.sql
+      - ./mysql:/var/lib/mysql
+    networks:
+      - my-network
+
+  mysql-5.7:
+    image: mysql:5.7
+    restart: no
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      # MYSQL_DATABASE: your_database
+      MYSQL_USER: test
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3307"
+    volumes:
+      - ./mysql5.7:/var/lib/mysql
+    networks:
+      - my-network
+
+  redis:
+    image: redis:latest
+    restart: no
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis:/data
+    networks:
+      - my-network
+
+  mongodb:
+    image: mongo:latest
+    restart: no
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=root
+    #   - MONGO_INITDB_ROOT_PASSWORD=123456
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb:/data/db
+    networks:
+      - my-network
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      # - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      # - ME_CONFIG_MONGODB_ADMINPASSWORD=123456
+      # - ME_CONFIG_OPTIONS_EDITORTHEME=ambiance
+    depends_on:
+      - mongodb
+    networks:
+      - my-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: no
+    environment:
+      PMA_HOST: mysql-latest
+      PMA_PORT: 3306
+    ports:
+      - "8083:80"
+    depends_on:
+      - mysql-latest
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

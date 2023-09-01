@@ -1,0 +1,88 @@
+version: "3.8"
+services:
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: nacos
+    env_file:
+      - ./nacos/nacos-standlone-mysql.env
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9555:9555"
+    restart: no
+    networks:
+      - my-network
+
+  jmeter:
+    image: justb4/jmeter:latest
+    volumes:
+      - ./jmeter/scripts:/jmeter/scripts
+      - ./jmeter/result:/jmeter/results
+    # command: -n -t /jmeter/scripts/test.jmx -l /jmeter/results/result.jtl -e -o /jmeter/results/dashboard
+    networks:
+      - my-network
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    ports:
+      - "8082:8080"
+      - "443:443"
+      - "22:22"
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+  
+  yapi:
+    image: jayfong/yapi
+    ports:
+      - '3000:3000'
+    volumes:
+      - './yapi/data:/app/data'
+      - './yapi/exts:/app/exts'
+    environment:
+      - TZ=Asia/Shanghai
+      - YAPI_ADMIN_ACCOUNT=admin@foo.bar
+      - YAPI_ADMIN_PASSWORD=amdin
+      - YAPI_CLOSE_REGISTER=true
+      - YAPI_NPM_REGISTRY=https://registry.npm.taobao.org
+      - YAPI_DB_SERVERNAME=mongodb
+      - YAPI_DB_PORT=27017
+      - YAPI_DB_DATABASE=yapi
+      # - YAPI_DB_USER=root
+      # - YAPI_DB_PASS=123456
+    networks:
+      - my-network
+
+  teamcity-server:
+    image: jetbrains/teamcity-server
+    volumes:
+      - ./teamcity-server/data:/data/teamcity_server/datadir
+      - ./teamcity-server/logs:/opt/teamcity/logs
+    ports:
+      - "8111:8111"
+    environment:
+      - TEAMCITY_SERVER_MEM_OPTS=-Xmx2g -XX:MaxPermSize=270m -XX:ReservedCodeCacheSize=350m
+  teamcity-agent:
+    image: jetbrains/teamcity-agent
+    depends_on:
+      - teamcity-server
+    environment:
+      - SERVER_URL=http://teamcity-server:8111
+    volumes:
+      - ./teamcity-agent/conf:/data/teamcity_agent/conf
+      - /var/run/docker.sock:/var/run/docker.sock
+  
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins/jenkins_home:/var/jenkins_home
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+
+networks:
+  my-network:
+    driver: bridge
